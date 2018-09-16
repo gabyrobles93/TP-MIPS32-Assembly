@@ -7,11 +7,9 @@
 typedef struct {
     FILE * fin;
     FILE * fout;
-    bool std_in;
-    bool std_out;
 }B64Decoder;
 
 int decoder_create(B64Decoder * decoder, const char * finput, const char * foutput);
-int open_file(FILE ** file, const char * path);
+int decoder_start(B64Decoder * decoder);
 
 #endif

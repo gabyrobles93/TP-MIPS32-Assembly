@@ -17,6 +17,8 @@ int main (int argc, char ** argv) {
     } else {
         puts("Error de invocacion del programa");
     }
+
+    decoder_start(&decoder);
     
 
     return 0;

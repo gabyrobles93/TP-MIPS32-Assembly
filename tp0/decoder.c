@@ -1,13 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "decoder.h"
 
+static int open_file(FILE ** file, const char * path);
+
 int decoder_create(B64Decoder * decoder, const char * finput, const char * foutput) {
+    if (!decoder) return -1;
+
     decoder->fin = NULL;
     decoder->fout = NULL;
-    decoder->std_in = false;
-    decoder->std_out = false;
 
     int code = 0;
 
@@ -16,7 +19,7 @@ int decoder_create(B64Decoder * decoder, const char * finput, const char * foutp
         printf("Error al abrir el archivo %s. \n", finput);
     } else if (code == 1) {
         puts("El archivo de entrada sera la entrada estandar \n");
-        decoder->std_in = true;
+        decoder->fin = stdin;
     } else {
         printf("El archivo de entrada será %s \n", finput);
     }
@@ -26,10 +29,23 @@ int decoder_create(B64Decoder * decoder, const char * finput, const char * foutp
         printf("Error al abrir el archivo %s. \n", finput);
     } else if (code == 1) {
         puts("El archivo de salida sera la salida estandar \n");
-        decoder->std_out = true;
+        decoder->fout = stdout;
     } else {
         printf("El archivo de entrada será %s \n", foutput);
     }
+
+    return 0;
+}
+
+int decoder_start(B64Decoder * decoder) {
+    if (!decoder) return -1;
+
+    uint8_t c = 0;
+
+    while ((c = (uint8_t) fgetc(decoder->fin)) != (uint8_t) EOF) {
+        printf("Caracter leído de archivo: %c \n", c);
+    }  
+
 
     return 0;
 }
