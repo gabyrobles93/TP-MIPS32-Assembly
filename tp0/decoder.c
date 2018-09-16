@@ -43,7 +43,22 @@ int decoder_start(B64Decoder * decoder) {
     uint8_t c = 0;
 
     while ((c = (uint8_t) fgetc(decoder->fin)) != (uint8_t) EOF) {
-        printf("Caracter leído de archivo: %c \n", c);
+        printf("Caracter leído: %c \n", c);
+        if (c >= 'A' && c <= 'Z') {
+            c -= 'A';               // Obtengo el valor entero decodificado para el rango A-Z
+        } else if (c >= 'a' && c<= 'z') {
+            printf("el valor de c es %i \n", c);
+            c = ((c - 'a') + 26);   // Obtengo el valor entero decodificado para el rango a-z
+        } else if (c >= '0' && c <= '9') {
+            c = ((c - '0') +  52);  // Obtengo el valor entero decofificado para el rango 0-9
+        } else if (c == '+') {
+            c = 62;                 // Obtengo el valor entero decodificado para el caracter +
+        } else if (c == '/') {
+            c = 63;                 // Obtengo el valor entero decodificado para el caracter /
+        } else {
+            puts("Error al decodificar: caracter fuera del código base 64.");
+        }
+        printf("Su valor entero decodificado es %i \n", c);
     }  
 
 
