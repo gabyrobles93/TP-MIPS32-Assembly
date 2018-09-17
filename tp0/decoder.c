@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include "base64.h"
 #include "decoder.h"
 
 static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
@@ -20,9 +21,11 @@ int decoder_start(B64Decoder * decoder) {
 
     uint8_t buffer[4];
     size_t bytes_readed;
+    size_t nreads = 0;
 
     bytes_readed = fread(buffer, sizeof(uint8_t), 4, decoder->fin);
     while (bytes_readed > 0) {
+        nreads++;
         if (bytes_readed < 4) {
             fprintf(stderr, "Lectura inválida en el archivo de entrada.");
             return -1;
@@ -32,7 +35,11 @@ int decoder_start(B64Decoder * decoder) {
             fprintf(stderr, "Error en la decodificación: se dectó un caracter inválido.\n");
             return -1;
         }
-
+        
+        if (nreads == MAX_CHARS_FOR_LINE/4) {
+            fgetc(decoder->fin); // Leo el \n que seguro está luego del caracter 76
+            nreads = 0;
+        }
         bytes_readed = fread(buffer, sizeof(uint8_t), 4, decoder->fin);
     }
 
@@ -53,12 +60,12 @@ int decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
 
     uint8_t c1 = (b0 << 2) | (b1 >> 4);
     uint8_t c2 = (b1 << 4) | (b2 >> 2);
-    uint8_t c3 = (((b2 << 6) & 0xc0) | b3);
+    uint8_t c3 = (((b2 << 6)) | b3);
 
-    putc(c1, decoder->fout);
-    putc(c2, decoder->fout);
-    putc(c3, decoder->fout);
-
+    if (c1 != 0) putc(c1, decoder->fout);
+    if (c2 != 0) putc(c2, decoder->fout);
+    if (c3 != 0) putc(c3, decoder->fout);
+    
     return 0;
 }
 

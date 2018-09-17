@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define MAX_CHARS_FOR_LINE 76
+
 uint8_t base64[] = {
   'A', 'B', 'C', 'D', 'E', // 0 a 4
   'F', 'G', 'H', 'I', 'J', // 5 a 9
