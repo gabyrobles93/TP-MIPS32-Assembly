@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define MAX_CHARS_FOR_LINE 76
+#define MAX_CHARS_PER_LINE 76
 
 uint8_t base64[] = {
   'A', 'B', 'C', 'D', 'E', // 0 a 4
@@ -20,7 +20,5 @@ uint8_t base64[] = {
   '3', '4', '5', '6', '7', // 55 a 59
   '8', '9', '+', '/'       // 60 a 63 
 };
-
-// 19 22 5 46 == TWFu
 
 #endif

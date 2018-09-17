@@ -1,13 +1,15 @@
 #include <string.h>
 #include <arpa/inet.h>
-#include "encoder.h"
 #include "base64.h"
+#include "encoder.h"
 
 #define MASK_LAST_TWO 0x03
 #define MASK_LAST_FOUR 0x0F
 #define MASK_LAST_SIX 0x3F
 
 int B64_encoder_create(B64_encoder_t * enc, FILE * input, FILE * output) {
+  enc->n_written = 0;
+
   if (input) {
     enc->_fin = input;
   } else {
@@ -39,19 +41,19 @@ int B64_encoder_start(B64_encoder_t * enc) {
 
       memcpy(&index, &c1, 1);
       index = index >> 2;
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
       memcpy(&index, &c2, 1);
       index = (index >> 4) | ((c1 & MASK_LAST_TWO) << 4);
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
       memcpy(&index, &c3, 1);
       index = (index >> 6) | ((c2 & MASK_LAST_FOUR) << 2);
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
       memcpy(&index, &c3, 1);
       index = (index & MASK_LAST_SIX);
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
     }
 
     // 16 bits read
@@ -62,17 +64,17 @@ int B64_encoder_start(B64_encoder_t * enc) {
 
       memcpy(&index, &c1, 1);
       index = index >> 2;
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
       memcpy(&index, &c2, 1);
       index = (index >> 4) | ((c1 & MASK_LAST_TWO) << 4);
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
       memcpy(&index, &c3, 1);
       index = (index >> 6) | ((c2 & MASK_LAST_FOUR) << 2);
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
-      fwrite(&padding, sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &padding);
     }
 
     // 8 bits read
@@ -83,18 +85,31 @@ int B64_encoder_start(B64_encoder_t * enc) {
 
       memcpy(&index, &c1, 1);
       index = index >> 2;
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
       memcpy(&index, &c2, 1);
       index = (index >> 4) | ((c1 & MASK_LAST_TWO) << 4);
-      fwrite(&base64[index], sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &base64[index]);
 
-      fwrite(&padding, sizeof(uint8_t), 1, enc->_fout);
-      fwrite(&padding, sizeof(uint8_t), 1, enc->_fout);
+      _B64_encoder_write(enc, &padding);
+      _B64_encoder_write(enc, &padding);
     }
 
     read = fread(enc->_buff, sizeof(unsigned char), BUFF_LEN, enc->_fin);
   }
 
   return 0;
+}
+
+void _B64_encoder_write(B64_encoder_t * enc, const void * buff) {
+  if (enc->n_written == MAX_CHARS_PER_LINE) {
+    char endl = '\n';
+    enc->n_written = 0;
+    fwrite(&endl, sizeof(char), 1, enc->_fout);
+  }
+
+  fwrite(buff, sizeof(*buff), 1, enc->_fout);
+  enc->n_written++;
+
+  return;
 }

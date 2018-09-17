@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-#include "base64.h"
+// #include "base64.h"
 #include "decoder.h"
 
 static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
@@ -36,7 +36,7 @@ int decoder_start(B64Decoder * decoder) {
             return -1;
         }
         
-        if (nreads == MAX_CHARS_FOR_LINE/4) {
+        if (nreads == 76 / 4) {
             fgetc(decoder->fin); // Leo el \n que seguro está luego del caracter 76
             nreads = 0;
         }
