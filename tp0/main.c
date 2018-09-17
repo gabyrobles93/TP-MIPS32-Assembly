@@ -59,7 +59,8 @@ int main (int argc, char ** argv) {
         }        
         decoder_create(&decoder, fin, fout);
     } else {
-        fprintf(stderr, "Error de invocacion del programa");
+        fprintf(stderr, "Error de invocacion del programa.\n");
+        return -1;
     }
 
     if (decoder_start(&decoder) < 0) {
