@@ -1,42 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdint.h>
 #include "decoder.h"
 
-static int open_infile(FILE ** file, const char * path);
-static int open_outfile(FILE ** file, const char * path);
-static void decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
+static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
 static int decode_value(uint8_t encoded_value);
 
-int decoder_create(B64Decoder * decoder, const char * finput, const char * foutput) {
-    if (!decoder) return -1;
+int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
+    if (!decoder || !finput || !foutput) return -1;
 
-    decoder->fin = NULL;
-    decoder->fout = NULL;
-
-    int code = 0;
-
-    code = open_infile(&(decoder->fin), finput);
-    if (code == -1) {
-        printf("Error al abrir el archivo %s. \n", finput);
-    } else if (code == 1) {
-        puts("El archivo de entrada sera la entrada estandar \n");
-        decoder->fin = stdin;
-    } else {
-        printf("El archivo de entrada será %s \n", finput);
-    }
-
-    code = open_outfile(&(decoder->fout), foutput);
-    if (code == -1) {
-        printf("Error al abrir el archivo %s. \n", foutput);
-    } else if (code == 1) {
-        puts("El archivo de salida sera la salida estandar \n");
-        decoder->fout = stdout;
-    } else {
-        printf("El archivo de salida será %s \n", foutput);
-    }
-
+    decoder->fin = finput;
+    decoder->fout = foutput;
+    
     return 0;
 }
 
@@ -49,24 +24,32 @@ int decoder_start(B64Decoder * decoder) {
     bytes_readed = fread(buffer, sizeof(uint8_t), 4, decoder->fin);
     while (bytes_readed > 0) {
         if (bytes_readed < 4) {
-            puts("El archivo de entrada es inválido!");
+            fprintf(stderr, "Lectura inválida en el archivo de entrada.");
             return -1;
         }
 
-        decode_4bytes(decoder, buffer);
+        if (decode_4bytes(decoder, buffer) < 0) {
+            fprintf(stderr, "Error en la decodificación: se dectó un caracter inválido.\n");
+            return -1;
+        }
+
         bytes_readed = fread(buffer, sizeof(uint8_t), 4, decoder->fin);
     }
 
     return 0;
 }
 
-void decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
-    if(!decoder || !buffer) return;
+int decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
+    if(!decoder || !buffer) return -1;
 
-    uint8_t b0 = buffer[0] == '=' ? 0 : (uint8_t) decode_value(buffer[0]);
-    uint8_t b1 = buffer[1] == '=' ? 0 : (uint8_t) decode_value(buffer[1]);
-    uint8_t b2 = buffer[2] == '=' ? 0 : (uint8_t) decode_value(buffer[2]);
-    uint8_t b3 = buffer[3] == '=' ? 0 : (uint8_t) decode_value(buffer[3]);
+    uint8_t b0 = (buffer[0] == '=' ? 0 : (uint8_t) decode_value(buffer[0]));
+    uint8_t b1 = (buffer[1] == '=' ? 0 : (uint8_t) decode_value(buffer[1]));
+    uint8_t b2 = (buffer[2] == '=' ? 0 : (uint8_t) decode_value(buffer[2]));
+    uint8_t b3 = (buffer[3] == '=' ? 0 : (uint8_t) decode_value(buffer[3]));
+
+    if (b0 < 0 || b1 < 0 || b2 < 0 || b3 < 0) {
+        return -1;  //decode_value detecto un caracter inválido (no presente en la tabla)
+    }
 
     uint8_t c1 = (b0 << 2) | (b1 >> 4);
     uint8_t c2 = (b1 << 4) | (b2 >> 2);
@@ -75,6 +58,8 @@ void decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
     putc(c1, decoder->fout);
     putc(c2, decoder->fout);
     putc(c3, decoder->fout);
+
+    return 0;
 }
 
 int decode_value(uint8_t c) {
@@ -89,33 +74,17 @@ int decode_value(uint8_t c) {
         } else if (c == '/') {
             c = 63;                 // Obtengo el valor entero decodificado para el caracter /
         } else {
-            puts("Error al decodificar: caracter fuera del código base 64.");
             return -1;
         }
     //printf("valor entero decodificado: %i \n", c);
     return c;
 }
 
-int open_infile(FILE ** file, const char * path) {
-    if (!path || strcmp(path, "-") == 0) { //La entrada es la estándar
-        return 1;
-    } else {
-        *file = fopen(path, "rb");
-            if(!(*file)) {
-            return -1;
-        }
-    }
-    return 0;
-}
+int decoder_destroy(B64Decoder * decoder) {
+    if (!decoder) return -1;
 
-int open_outfile(FILE ** file, const char * path) {
-    if (!path || strcmp(path, "-") == 0) { //La entrada es la estándar
-        return 1;
-    } else {
-        *file = fopen(path, "wb");
-            if(!(*file)) {
-            return -1;
-        }
-    }
+    decoder->fin = NULL;
+    decoder->fout = NULL;
+
     return 0;
 }

@@ -9,7 +9,8 @@ typedef struct {
     FILE * fout;
 }B64Decoder;
 
-int decoder_create(B64Decoder * decoder, const char * finput, const char * foutput);
+int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput);
 int decoder_start(B64Decoder * decoder);
+int decoder_destroy(B64Decoder * decoder);
 
 #endif
