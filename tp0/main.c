@@ -139,7 +139,7 @@ int main (int argc, char ** argv) {
 	if (!fout) {
 		// Si la salida es estandar
 		// imprimimos un \n final
-		// puts(""); // Agregar cuando el encoder ignore \n's
+		puts("");
 	}
 
 	return EXIT_SUCCESS;

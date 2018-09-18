@@ -38,5 +38,5 @@ bin:
 
 cpbin: 
 	cp tp0 /usr/bin
-	
+
 .PHONY: gxemul loopback
