@@ -8,10 +8,19 @@ static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
 static int decode_value(uint8_t encoded_value);
 
 int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
-    if (!decoder || !finput || !foutput) return -1;
+    if (!decoder) return -1;
 
-    decoder->fin = finput;
-    decoder->fout = foutput;
+    if (finput) {
+        decoder->fin = finput;
+    } else {
+        decoder->fin = stdin;
+    }
+
+    if (foutput) {
+        decoder->fout = foutput;
+    } else {
+        decoder->fout = stdout;
+    }
     
     return 0;
 }
@@ -27,7 +36,7 @@ int decoder_start(B64Decoder * decoder) {
     while (bytes_readed > 0) {
         nreads++;
         if (bytes_readed < 4) {
-            fprintf(stderr, "Lectura inválida en el archivo de entrada.");
+            fprintf(stderr, "Lectura inválida en el archivo de entrada.\n");
             return -1;
         }
 

@@ -12,19 +12,19 @@ ssh:
 	sudo ssh -p 2222 root@127.0.0.1
 
 # Envia los archivo .c del directorio actual
-# a guest en la carpeta /root/tp1
+# a guest en la carpeta /root/tp0
 c2guest:
-	sudo scp -P2222 -r ./*.c root@127.0.0.1:/root/tp1
+	sudo scp -P2222 -r ./*.c root@127.0.0.1:/root/tp0
 
 # Envia los archivo .h del directorio actual
-# a guest en la carpeta /root/tp1	
+# a guest en la carpeta /root/tp0	
 h2guest:
-	sudo scp -P2222 -r ./*.h root@127.0.0.1:/root/tp1
+	sudo scp -P2222 -r ./*.h root@127.0.0.1:/root/tp0
 
 # Envia los archivo Makefile del directorio actual
-# a guest en la carpeta /root/tp1	
+# a guest en la carpeta /root/tp0	
 make2guest:
-	sudo scp -P2222 ./Makefile root@127.0.0.1:/root/tp1
+	sudo scp -P2222 ./Makefile root@127.0.0.1:/root/tp0
 
 # Se ejecuta del lado de guest
 # genera el archivo assembly
@@ -36,4 +36,7 @@ asm:
 bin:
 	gcc -Wall -o tp0 *.c
 
+cpbin: 
+	cp tp0 /usr/bin
+	
 .PHONY: gxemul loopback
