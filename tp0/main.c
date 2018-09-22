@@ -98,7 +98,7 @@ int main (int argc, char ** argv) {
 	
        
     
-    if (mode == EXEC_MODE_ENCODE) {
+	if (mode == EXEC_MODE_ENCODE) {
 		fprintf(stderr, "Encode mode\n");
 		B64_encoder_t encoder;
 		B64_encoder_create(&encoder, fin, fout);
@@ -113,7 +113,7 @@ int main (int argc, char ** argv) {
 		if (fout) {
 			fclose(fout);
 		}	
-    } 
+	} 
 	
 	if (mode == EXEC_MODE_DECODE) {
 		fprintf(stderr, "Decode mode\n");
@@ -139,7 +139,7 @@ int main (int argc, char ** argv) {
 	if (!fout) {
 		// Si la salida es estandar
 		// imprimimos un \n final
-		puts("");
+		// puts("");
 	}
 
 	return EXIT_SUCCESS;
