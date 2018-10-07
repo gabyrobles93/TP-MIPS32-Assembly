@@ -1,0 +1,9 @@
+Se compila así:
+
+Version C puro:
+guestOS$ gcc -Wall -g -o a8c main.c print_dnames.c
+
+Version C/Asm:
+guestOS$ gcc -Wall -g -o a8s main.c print_dnames.S
+
+Luego, pueden compararse con "objdump -S a8c" y "objdump -S a8s". Con el primero se puede apreciar el assembly generado por gcc, intercalado con el codigo C original. Con el segundo se puede apreciar cómo el gcc reordena instrucciones e implementa las pseudo-instrucciones, más cómo se codifica cada instrucción.
