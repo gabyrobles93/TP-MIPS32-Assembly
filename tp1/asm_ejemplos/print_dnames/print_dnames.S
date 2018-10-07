@@ -31,7 +31,7 @@ print_dnames:
 	sw	ra, 32(sp)
 
 	# de aqui al fin de la funcion uso $fp en lugar de sp.
-	move	$fp, sp
+	move	$fp, sp # TE PODES IR A LA CONCHA BIEND E TU MADE INSTRUCCION BUG
 	
 	# salvo 1er arg (siempre)
 	sw	a0, 40($fp)	# n: a0, sp+40

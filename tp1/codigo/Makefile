@@ -21,7 +21,7 @@ c2guest:
 	sudo scp -P2222 -r ./*.c root@127.0.0.1:/root/tp1
 
 all2guest:
-	sudo scp -P2222 -r ./*.c ./*.S ./*.h root@127.0.0.1:/root/tp1
+	sudo scp -P2222 -r ./*.c ./*.S ./*.h ./Makefile root@127.0.0.1:/root/tp1
 
 # Envia los archivo .h del directorio actual
 # a guest en la carpeta /root/tp1	
@@ -32,6 +32,9 @@ h2guest:
 # a guest en la carpeta /root/tp1	
 make2guest:
 	sudo scp -P2222 ./Makefile root@127.0.0.1:/root/tp1
+
+remotecasm:
+	sudo ssh -p 2222 root@127.0.0.1 gcc -Wall -g -o /root/tp1/tp1 /root/tp1/*.c /root/tp1/*.S
 
 # Se ejecuta del lado de guest
 # genera el archivo assembly
