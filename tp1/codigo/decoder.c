@@ -9,6 +9,7 @@
 static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
 static uint8_t decode_value(uint8_t encoded_value);
 static int read_bytes(B64Decoder *, uint8_t *);
+static void asm_decode(unsigned int, unsigned int);
 
 int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
     if (!decoder) return -1;
@@ -31,7 +32,14 @@ int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
 int decoder_start(B64Decoder * decoder) {
     if (!decoder) return -1;
 
-    uint8_t buffer[4];
+    int ifd = fileno(decoder->fin);
+    fprintf(stderr, "ifd decoder en C: %i\n", ifd);
+    int ofd = fileno(decoder->fout);
+    fprintf(stderr, "ofd decoder en C: %i\n", ofd);
+
+    asm_decode(ifd, ofd);
+
+    /* uint8_t buffer[4];
     int bytes_readed;
 
     bytes_readed = read_bytes(decoder, buffer);
@@ -47,7 +55,7 @@ int decoder_start(B64Decoder * decoder) {
         }
 
         bytes_readed = read_bytes(decoder, buffer);
-    }
+    } */
 
     return 0;
 }
