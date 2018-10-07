@@ -1,6 +1,10 @@
 # Inicializa gxemul
+
+installsvssh:
+	sudo apt-get install openssh-server
+
 gxemul:
-	./gxemul/gxemul -e 3max -d gxemul/netbsd-pmax.img
+	sudo ./gxemul/gxemul -e 3max -d gxemul/netbsd-pmax.img
 
 # Este comando hay que ejecutarlo cada
 # vez que reiniciamos nuestra computadora
