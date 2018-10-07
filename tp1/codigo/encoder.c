@@ -27,7 +27,9 @@ int B64_encoder_create(B64_encoder_t * enc, FILE * input, FILE * output) {
 
 int B64_encoder_start(B64_encoder_t * enc) {
   
-  uint8_t index = 0;
+  asm_encoder();
+
+/*   uint8_t index = 0;
   unsigned char c1, c2, c3;
   char padding = '=';
 
@@ -98,7 +100,7 @@ int B64_encoder_start(B64_encoder_t * enc) {
     read = fread(enc->_buff, sizeof(unsigned char), BUFF_LEN, enc->_fin);
   }
 
-  return 0;
+  return 0; */
 }
 
 void _B64_encoder_write(B64_encoder_t * enc, const void * buff) {
