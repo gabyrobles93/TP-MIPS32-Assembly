@@ -2,6 +2,7 @@
 #include <sys/syscall.h>
 
 #define STACK_FRAME_SIZE 40
+#define BUFFER_SIZE 3
 #define GLOBAL_POINTER 24
 
 	.text			# segmento de texto del programa
@@ -45,16 +46,68 @@ asm_encode:
     
     # ACA VA EL CODIGO DEL ENCODER ---
 
-    sw a0, 20(sp)
-    sw a1, 12(sp)
+read_loop:
 
-    la a0, msg_ifd
-    lw a1, 20(sp)
-    jal printf
+    li      v0, SYS_read        # Cargo la syscall
+    lw      a0, 4($fp)          # Cargo el ifd
+    la      a1, buffer          # Cargo la dirección del buffer
+    li      a2, BUFFER_SIZE     # Cargo el largo del buffer
+    syscall                
 
-    la a0, msg_ofd
-    lw a1, 12(sp)
-    jal printf
+    # Si se leen 24 bits...
+    li      a0, 3
+    beq     v0, a0, bytes_readed_3
+
+    # Si se leen 16 bits...
+    li      a0, 2
+    beq     v0, a0, bytes_readed_2
+
+    # Si se leen 8 bits...
+    li      a0, 1
+    beq     v0, a0, bytes_readed_1
+
+    # Si se llego a EOF
+    beq     v0, zero, end_reading
+
+#    li  v0, SYS_write           # Cargo la syscall
+#    lw  a0, 8($fp)              # Cargo el ofd
+#    la  a1, buffer              # Cargo el buffer
+#    li  a2, BUFFER_SIZE         # Cargi el largo del buffer
+#    syscall            
+
+    j read_loop
+
+bytes_readed_3:
+
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, msg_bytes_readed_3      # Cargo el buffer
+    li  a2, 18                  # Cargo el largo del buffer
+    syscall
+
+    j read_loop
+
+bytes_readed_2:
+
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, msg_bytes_readed_2      # Cargo el buffer
+    li  a2, 18                  # Cargo el largo del buffer
+    syscall
+
+    j read_loop
+
+bytes_readed_1:
+
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, msg_bytes_readed_1      # Cargo el buffer
+    li  a2, 18                  # Cargo el largo del buffer
+    syscall
+
+    j read_loop
+
+end_reading:
 
     # FIN DEL CODIGO DEL ENCODER ---
 
@@ -72,6 +125,12 @@ asm_encode:
 	.end	asm_encode
 	.size	asm_encode,.-asm_encode
 
+    .data
+buffer: .space BUFFER_SIZE
+msg_bytes_readed_3: .asciiz "tres bytes readed\n"
+msg_bytes_readed_2: .asciiz "dos bytes readed\n"
+msg_bytes_readed_1: .asciiz "uno bytes readed\n"
+
 	.rdata			# segmento read-only data
 
 	.align 2
@@ -80,9 +139,6 @@ name:	.word name_0, name_1, name_2, name_3, name_4, \
 	.size name, 40
 
 	.align 0		# alineacion 2^0
-
-msg_ifd: .asciiz "ifd en asm: %i \n"
-msg_ofd: .asciiz "ofd en asm: %i \n"
 name_0: .asciiz "cero"
 name_1: .asciiz "uno"
 name_2: .asciiz "dos"
