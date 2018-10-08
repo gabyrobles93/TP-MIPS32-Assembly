@@ -36,6 +36,9 @@ asm_encode:
     # Guardamos en el stack frame estos registros que son callee saved
 	sw	$fp, 28(sp)
 	sw	ra, 32(sp)
+    # Estos registros son callee saved, los guardo porque los voy a usar en esta rutina:
+    sw  s0,  24(sp)
+    sw  s1,  20(sp)
 
     addiu   $fp, sp, 36
 
@@ -85,6 +88,28 @@ bytes_readed_3:
     li  a2, 18                  # Cargo el largo del buffer
     syscall
 
+    la  s0, buffer
+
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    move  a1, s0                # Cargo el buffer
+    li  a2, 1                  # Cargo el largo del buffer
+    syscall
+
+    addi s0, 1
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    move  a1, s0                # Cargo el buffer
+    li  a2, 1                  # Cargo el largo del buffer
+    syscall    
+
+    addi s0, 1
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    move  a1, s0                # Cargo el buffer
+    li  a2, 1                  # Cargo el largo del buffer
+    syscall    
+
     j read_loop
 
 bytes_readed_2:
@@ -115,6 +140,9 @@ end_reading:
 	lw	gp, GLOBAL_POINTER(sp)
 	lw	$fp, 28(sp)
 	lw	ra, 32(sp)
+    lw  s0,  24(sp)
+    lw  s1,  20(sp)
+
 
     # Destruyo el stack frame
     addu	sp, sp, STACK_FRAME_SIZE
