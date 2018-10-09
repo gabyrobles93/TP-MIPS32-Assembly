@@ -36,8 +36,9 @@ int B64_encoder_start(B64_encoder_t * enc) {
   fprintf(stderr, "ofd en C: %i\n", ofd);
 
   asm_encode(ifd, ofd);
+  return 0;
 
-/*   uint8_t index = 0;
+  uint8_t index = 0;
   unsigned char c1, c2, c3;
   char padding = '=';
 
@@ -108,7 +109,7 @@ int B64_encoder_start(B64_encoder_t * enc) {
     read = fread(enc->_buff, sizeof(unsigned char), BUFF_LEN, enc->_fin);
   }
 
-  return 0; */
+  return 0;
 }
 
 void _B64_encoder_write(B64_encoder_t * enc, const void * buff) {
