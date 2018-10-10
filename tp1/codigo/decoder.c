@@ -6,9 +6,9 @@
 
 #define INVALID_CHAR 0xFF
 
-static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
-static uint8_t decode_value(uint8_t encoded_value);
-static int read_bytes(B64Decoder *, uint8_t *);
+//static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
+//static uint8_t decode_value(uint8_t encoded_value);
+//static int read_bytes(B64Decoder *, uint8_t *);
 static void asm_decode(unsigned int, unsigned int);
 
 int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
@@ -60,7 +60,7 @@ int decoder_start(B64Decoder * decoder) {
     return 0;
 }
 
-int decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
+/* int decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
     if(!decoder || !buffer) return -1;
 
     uint8_t b0 = (buffer[0] == '=' ? 0 : decode_value(buffer[0]));
@@ -129,4 +129,4 @@ int read_bytes(B64Decoder * decoder, uint8_t * buffer) {
     }
 
     return i;
-}
+} */
