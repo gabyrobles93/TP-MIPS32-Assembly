@@ -29,7 +29,7 @@ asm_decode:
     sw  ra, 36(sp)
     sw  $fp, 32(sp)
 
-    # Igualo fp con sp y de ahora en mas utilizo sp
+    # Igualo fp con sp y de ahora en mas utilizo fp
     move    $fp, sp
 
     # Salvo los argumentos en mi región de caller-saved registers
