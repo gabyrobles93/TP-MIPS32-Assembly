@@ -1,6 +1,8 @@
 #include <mips/regdef.h>
 #include <sys/syscall.h>
 
+#define BUFFER_SIZE 4
+
 	.text			# segmento de texto del programa
 
 	.abicalls
@@ -38,27 +40,45 @@ asm_decode:
 
     # FIN DE INICIALIZACIÓN | INICIO DEL PROGRAMA 
 
+decode_loop:
 
-	la	t9, read_bytes	
-	jal	ra, t9
+    # Invoco a la funcion que lee 4 bytes en el buffer
+    # Se ignoran espacios (!isspace(char))
+    # Antes guardo registros caller-saved
+    sw  t0, 16($fp)
+    sw  t1, 12($fp)
+    # Paso el argumento: ifd (a0)
+    lw  a0, 24($fp)
+    sw  a0, 0($fp)
+    jal	read_bytes
+    # Restauro los registros caller-saved
+    lw  t0, 16($fp)
+    lw  t1, 12($fp)
+    lw  a0, 24($fp)
+    lw  a1, 20($fp)
 
-	la	t9, read_bytes	
-	jal	ra, t9
+    # Si read_bytes devolvio < 0 es que hubo error (caracter invalido)
+    bltz    v0, end_decode
 
-	la	t9, decode_4bytes	
-	jal	ra, t9
+    # Si read_bytes devolvio < 4 es que se llego a eof (archivo invalido)
+    li  t9, 4
+    blt v0, t9,  end_decode
 
-	la	t9, decode_4bytes	
-	jal	ra, t9
+    # Si read_bytes devolvio = 0 es que se llego al fin del archivo
+    beqz    v0, end_decode
 
-	la	t9, decode_value	
-	jal	ra, t9
+    # Imprimo por pantalla los 4 bytes leidos (DEBUG)
+    li  v0, SYS_write           # Cargo la syscall
+    li  a0, 1                   # Cargo el ofd
+    la  a1, buffer              # Cargo el buffer
+    li  a2, BUFFER_SIZE         # Cargo el largo del buffer
+    syscall  
 
-	la	t9, decode_value	
-	jal	ra, t9
+    j decode_loop
 
 
     # FIN DE PROGRAMA | DESTRUYO STACK FRAME
+end_decode:
 
     # Restauro registros callee saved
     lw  ra, 36(sp)
@@ -93,10 +113,73 @@ read_bytes:
     # Igualo fp con sp y de ahora en mas utilizo sp
     move    $fp, sp
 
+    # FIN DE INICIALIZACIÓN | INICIO DEL PROGRAMA 
 
+    la  t0, buffer
+    li  t1, 0
+read_bytes_loop:
 
+    # Guardo registros caller-saved
+    sw  t0, 16($fp)
+    sw  t1, 12($fp)
+    sw  a0, 8($fp)
 
+    li      v0, SYS_read        # Cargo la syscall
+#    lw      a0, 32($fp)         # Cargo el ifd
+    move    a1, t0              # Cargo la dirección del buffer
+    li      a2, 1               # Cargo el largo del buffer
+    syscall                     # Devuelve en v0 la cantidad leida
 
+    # Restauro registros caller-saved
+    lw  t0, 16($fp)
+    lw  t1, 12($fp)
+    lw  a0, 8($fp)
+
+    # Si la cantidad de bytes leidos fue cero se llego a EOF
+    beq     v0, zero, eof_read_bytes
+    # Si la syscall devolvio un numero negativo hubo error
+    bltz    v0, error_read_bytes
+
+    # Cargo en t9 el byte leido y alojado en el buffer
+    lbu  t9, 0(t0)  
+
+    # Si el byte leido es un espacio, hay que ignorarlo y seguir leyendo
+    li    t8, 0x20
+    beq t9, t8, read_bytes_loop
+    li    t8, 0x09
+    beq t9, t8, read_bytes_loop
+    li    t8, 0x0a
+    beq t9, t8, read_bytes_loop
+    li    t8, 0x0b
+    beq t9, t8, read_bytes_loop
+    li    t8, 0x0c
+    beq t9, t8, read_bytes_loop
+    li    t8, 0x0d
+    beq t9, t8, read_bytes_loop
+
+    # Si llegamos aca es porque el byte leido es valido
+    # Entonces corresponde aumentar el contador
+    addi    t0, 1
+    addi    t1, 1
+
+    # Chequeo si el contador de bytes llego a 4, en ese caso salimos
+    li    t8, 4
+    beq t1, t8, end_read_bytes_loop
+    j read_bytes_loop
+
+eof_read_bytes:
+    move  v0, t1
+    j end_read_bytes
+
+error_read_bytes:
+    li  v0, -1
+    j end_read_bytes
+
+    # FIN DE PROGRAMA | DESTRUYO STACK FRAME
+end_read_bytes_loop:
+    li  v0, 4
+
+end_read_bytes:
 
     # Restauro registros callee saved
     lw  ra, 28(sp)
@@ -193,7 +276,7 @@ decode_value:
 
    .data
 
-buffer: .space 4
+buffer: .space BUFFER_SIZE
 debug_msg: .asciiz "Mensaje\n"
 
 	.rdata			# segmento read-only data
