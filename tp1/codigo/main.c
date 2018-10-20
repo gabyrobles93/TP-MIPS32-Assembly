@@ -15,12 +15,12 @@ typedef enum {
 } exec_mode_t;
 
 FILE * open_infile(const char * path) {
-	fprintf(stderr, "Opening input file %s\n", path);
+	//fprintf(stderr, "Opening input file %s\n", path);
     return fopen(path, "rb");
 }
 
 FILE * open_outfile(const char * path) {
-	fprintf(stderr, "Opening output file %s\n", path);
+	//fprintf(stderr, "Opening output file %s\n", path);
     return fopen(path, "wt");
 }
 

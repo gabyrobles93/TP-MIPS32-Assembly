@@ -24,9 +24,9 @@
 	.abicalls
 	.align 2		# alineacion 2^2
 
-	.globl	asm_decode
-	.ent	asm_decode
-asm_decode:
+	.globl	base64_decode
+	.ent	base64_decode
+base64_decode:
     # Descripción del stack frame
     # Ocupará 40 bytes, ra guardará el return address
     # fp sera el registro usado como frame pointer
@@ -125,8 +125,8 @@ end_decode:
     # Retorno a la función que invocó a esta
     jr ra
 
-	.end	asm_decode
-	.size	asm_decode,.-asm_decode
+	.end	base64_decode
+	.size	base64_decode,.-base64_decode
 
 	.ent	read_bytes
 read_bytes:

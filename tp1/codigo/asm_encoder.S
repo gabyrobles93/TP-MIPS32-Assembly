@@ -16,9 +16,9 @@
 	.abicalls
 	.align 2		# alineacion 2^2
 
-	.globl	asm_encode
-	.ent	asm_encode
-asm_encode:
+	.globl	base64_encode
+	.ent	base64_encode
+base64_encode:
     # Descripción del stack frame
     # STACK_FRAME_SIZE bytes de espacio
     # el return address se guarda en ra
@@ -309,8 +309,8 @@ end_reading:
     # Vuelvo a la función que me invocó
     jr ra
 
-	.end	asm_encode
-	.size	asm_encode,.-asm_encode
+	.end	base64_encode
+	.size	base64_encode,.-base64_encode
 
   .data
 buffer: .space BUFFER_SIZE
