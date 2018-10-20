@@ -68,9 +68,16 @@ int decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
     uint8_t c2 = (b1 << 4) | (b2 >> 2);
     uint8_t c3 = (((b2 << 6)) | b3);
 
-    if (c1 != 0) putc(c1, decoder->fout);
-    if (c2 != 0) putc(c2, decoder->fout);
-    if (c3 != 0) putc(c3, decoder->fout);
+    if (buffer[3] == '=' && buffer[2] != '=') { // Termina con un =
+        putc(c1, decoder->fout);
+        putc(c2, decoder->fout);
+    } else if (buffer[3] == '=' && buffer[2] == '=') { // Termina con dos =
+        putc(c1, decoder->fout);
+    } else {
+        putc(c1, decoder->fout);
+        putc(c2, decoder->fout);
+        putc(c3, decoder->fout);       
+    }
     
     return 0;
 }
