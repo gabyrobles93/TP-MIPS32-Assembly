@@ -6,10 +6,9 @@
 
 #define INVALID_CHAR 0xFF
 
-//static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
-//static uint8_t decode_value(uint8_t encoded_value);
-//static int read_bytes(B64Decoder *, uint8_t *);
-static void asm_decode(unsigned int, unsigned int);
+static int decode_4bytes(B64Decoder * decoder, uint8_t * buffer);
+static uint8_t decode_value(uint8_t encoded_value);
+static int read_bytes(B64Decoder *, uint8_t *);
 
 int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
     if (!decoder) return -1;
@@ -32,14 +31,6 @@ int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
 int decoder_start(B64Decoder * decoder) {
     if (!decoder) return -1;
 
-    int ifd = fileno(decoder->fin);
-    //fprintf(stderr, "ifd decoder en C: %i\n", ifd);
-    int ofd = fileno(decoder->fout);
-    //fprintf(stderr, "ofd decoder en C: %i\n", ofd);
-
-    asm_decode(ifd, ofd);
-
-/*
     uint8_t buffer[4];
     int bytes_readed;
 
@@ -57,11 +48,10 @@ int decoder_start(B64Decoder * decoder) {
 
         bytes_readed = read_bytes(decoder, buffer);
     }
-*/
+
     return 0;
 }
 
-/*
 int decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
     if(!decoder || !buffer) return -1;
 
@@ -78,16 +68,9 @@ int decode_4bytes(B64Decoder * decoder, uint8_t * buffer) {
     uint8_t c2 = (b1 << 4) | (b2 >> 2);
     uint8_t c3 = (((b2 << 6)) | b3);
 
-    if (buffer[3] == '=' && buffer[2] != '=') { // Termina con un =
-        putc(c1, decoder->fout);
-        putc(c2, decoder->fout);
-    } else if (buffer[3] == '=' && buffer[2] == '=') { // Termina con dos =
-        putc(c1, decoder->fout);
-    } else {
-        putc(c1, decoder->fout);
-        putc(c2, decoder->fout);
-        putc(c3, decoder->fout);       
-    }
+    if (c1 != 0) putc(c1, decoder->fout);
+    if (c2 != 0) putc(c2, decoder->fout);
+    if (c3 != 0) putc(c3, decoder->fout);
     
     return 0;
 }
@@ -139,5 +122,3 @@ int read_bytes(B64Decoder * decoder, uint8_t * buffer) {
 
     return i;
 }
-
-*/

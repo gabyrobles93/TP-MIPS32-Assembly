@@ -99,7 +99,7 @@ int main (int argc, char ** argv) {
        
     
 	if (mode == EXEC_MODE_ENCODE) {
-		//fprintf(stderr, "Encode mode\n");
+		fprintf(stderr, "Encode mode\n");
 		B64_encoder_t encoder;
 		B64_encoder_create(&encoder, fin, fout);
 		// fprintf(stderr, "Encode created\n");
@@ -116,7 +116,7 @@ int main (int argc, char ** argv) {
 	} 
 	
 	if (mode == EXEC_MODE_DECODE) {
-		//fprintf(stderr, "Decode mode\n");
+		fprintf(stderr, "Decode mode\n");
 		B64Decoder decoder;
 		if (decoder_create(& decoder, fin, fout)) {
 			fprintf(stderr, "Fail creating decoder\n");
