@@ -37,7 +37,7 @@
 	.globl	base64_encode
 	.ent	base64_encode
 base64_encode:
-    # Descripción del stack frame
+    # Descripcion del stack frame
     # STACK_FRAME_SIZE bytes de espacio
     # el return address se guarda en ra
     # fp sera el registro usado como frame pointer
@@ -65,7 +65,7 @@ base64_encode:
     # Igualo fp con sp y de ahora en mas utilizo fp
     move    $fp, sp
 
-    # Salvo los argumentos en mi región de caller-saved registers
+    # Salvo los argumentos en mi region de caller-saved registers
     sw  a0, 24($fp) # ifd
     sw  a1, 20($fp) # ofd
 
@@ -83,12 +83,12 @@ base64_encode:
     move a0, zero
     sw   a0, 16($fp)
 
-    # FIN DE INICIALIZACIÓN | INICIO DEL PROGRAMA 
+    # FIN DE INICIALIZACIoN | INICIO DEL PROGRAMA 
 
 read_loop:
     li      v0, SYS_read        # Cargo la syscall
     lw      a0, 24($fp)         # Cargo el ifd
-    la      a1, encoder_buffer          # Cargo la dirección del encoder_buffer
+    la      a1, encoder_buffer          # Cargo la direccion del encoder_buffer
     li      a2, ENCODER_BUFFER_SIZE     # Cargo el largo del encoder_buffer
     syscall                     # Devuelve en v0 la cantidad leida
 
@@ -353,7 +353,7 @@ end_reading:
     # Destruyo el stack frame
     addu	sp, sp, STACK_FRAME_SIZE
 
-    # Vuelvo a la función que me invocó
+    # Vuelvo a la funcion que me invoco
     jr ra
     
 	.end	base64_encode
@@ -365,12 +365,12 @@ end_reading:
 	.globl	base64_decode
 	.ent	base64_decode
 base64_decode:
-    # Descripción del stack frame
-    # Ocupará 40 bytes, ra guardará el return address
+    # Descripcion del stack frame
+    # Ocupara 40 bytes, ra guardara el return address
     # fp sera el registro usado como frame pointer
     .frame	$fp, 40, ra
 
-    # Bloque de código PIC
+    # Bloque de codigo PIC
  	.set	noreorder   # Apaga reordenamiento de instrucciones
 	.cpload t9		    # Directiva usada para codigo PIC
 	.set	reorder		# Enciende reordenamiento de instrucciones   
@@ -388,11 +388,11 @@ base64_decode:
     # Igualo fp con sp y de ahora en mas utilizo fp
     move    $fp, sp
 
-    # Salvo los argumentos en mi región de caller-saved registers
+    # Salvo los argumentos en mi region de caller-saved registers
     sw  a0, 24($fp)
     sw  a1, 20($fp)
 
-    # FIN DE INICIALIZACIÓN | INICIO DEL PROGRAMA 
+    # FIN DE INICIALIZACIoN | INICIO DEL PROGRAMA 
 
 decode_loop:
 
@@ -428,7 +428,7 @@ decode_loop:
     # li  a2, DECODER_BUFFER_SIZE         # Cargo el largo del decoder_buffer
     # syscall  
 
-    # Si llegamos acá es porque tenemos 4 bytes en el decoder_buffer 
+    # Si llegamos aca es porque tenemos 4 bytes en el decoder_buffer 
     # que pueden ser decodificados
 
     # Invoco a la funcion que decodifica 4 bytes en el decoder_buffer
@@ -482,10 +482,10 @@ end_decode:
     lw  $fp, 32(sp)
     lw  gp, 28(sp)
 
-    # Destruyo el stack frame de esta función
+    # Destruyo el stack frame de esta funcion
     addu    sp, sp, 40
 
-    # Retorno a la función que invocó a esta
+    # Retorno a la funcion que invoco a esta
     jr ra
 
 	.end	base64_decode
@@ -510,7 +510,7 @@ read_bytes:
     # Igualo fp con sp y de ahora en mas utilizo sp
     move    $fp, sp
 
-    # FIN DE INICIALIZACIÓN | INICIO DEL PROGRAMA 
+    # FIN DE INICIALIZACIoN | INICIO DEL PROGRAMA 
 
     la  t0, decoder_buffer
     li  t1, 0
@@ -523,7 +523,7 @@ read_bytes_loop:
 
     li      v0, SYS_read        # Cargo la syscall
     lw      a0, 32($fp)         # Cargo el ifd
-    move    a1, t0              # Cargo la dirección del decoder_buffer
+    move    a1, t0              # Cargo la direccion del decoder_buffer
     li      a2, 1               # Cargo el largo del decoder_buffer
     syscall                     # Devuelve en v0 la cantidad leida
 
@@ -583,10 +583,10 @@ end_read_bytes:
     lw  $fp, 24(sp)
     lw  gp, 20(sp)
 
-    # Destruyo el stack frame de esta función
+    # Destruyo el stack frame de esta funcion
     addu    sp, sp, 32
 
-    # Retorno a la función que invocó a esta
+    # Retorno a la funcion que invoco a esta
     jr ra
 
 	.end	read_bytes
@@ -611,7 +611,7 @@ decode_4bytes:
     # Igualo fp con sp y de ahora en mas utilizo fp
     move    $fp, sp
 
-    # FIN DE INICIALIZACIÓN DEL STACK FRAME | COMIENZO DE LA RUTINA
+    # FIN DE INICIALIZACIoN DEL STACK FRAME | COMIENZO DE LA RUTINA
 
     la  t0, decoder_buffer
     li  t9, PADDING_ASCII
@@ -858,17 +858,17 @@ error_decoder_writing:
 
 end_decode_4bytes:
 
-    # FIN DE LA RUTINA | DESTRUCCIÓN DEL STACK FRAME
+    # FIN DE LA RUTINA | DESTRUCCIoN DEL STACK FRAME
 
     # Restauro registros callee saved
     lw  ra, 48(sp)
     lw  $fp, 44(sp)
     lw  gp, 40(sp)
 
-    # Destruyo el stack frame de esta función
+    # Destruyo el stack frame de esta funcion
     addu    sp, sp, 52
 
-    # Retorno a la función que invocó a esta
+    # Retorno a la funcion que invoco a esta
     jr ra
 
 	.end	decode_4bytes
@@ -894,7 +894,7 @@ decode_value:
     move    $fp, sp
 
 
-# FIN DE INICIALIZACIÓN DEL STACK FRAME | COMIENZO DE LA RUTINA
+# FIN DE INICIALIZACIoN DEL STACK FRAME | COMIENZO DE LA RUTINA
 
     li  t0, SLASH_ASCII
     beq a0, t0, decode_slash
@@ -967,17 +967,17 @@ decode_slash:
     j end_decode_value
 
 end_decode_value:
-# FIN DE LA RUTINA | DESTRUCCIÓN DEL STACK FRAME
+# FIN DE LA RUTINA | DESTRUCCIoN DEL STACK FRAME
 
     # Restauro registros callee saved
     lw  ra, 16(sp)
     lw  $fp, 12(sp)
     lw  gp, 8(sp)
 
-    # Destruyo el stack frame de esta función
+    # Destruyo el stack frame de esta funcion
     addu    sp, sp, 20
 
-    # Retorno a la función que invocó a esta
+    # Retorno a la funcion que invoco a esta
     jr ra
 
 	.end	decode_value

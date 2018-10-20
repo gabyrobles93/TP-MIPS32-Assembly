@@ -41,6 +41,7 @@ remotecasm:
 asm:
 	gcc -Wall -O0 -S -mrnames *.c
 
+# Compila con los archivos assembly
 casm:
 	gcc -Wall -g -o tp1 *.c *.S
 
