@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include "decoder.h"
 
-#define INVALID_CHAR 0xFF
+extern const char* errmsg[];
 
-static void base64_decode(unsigned int, unsigned int);
+static int base64_decode(unsigned int, unsigned int);
 
 int decoder_create(B64Decoder * decoder, FILE * finput, FILE * foutput) {
     if (!decoder) return -1;
@@ -34,7 +34,11 @@ int decoder_start(B64Decoder * decoder) {
     int ofd = fileno(decoder->fout);
     //fprintf(stderr, "ofd decoder en C: %i\n", ofd);
 
-    base64_decode(ifd, ofd);
+    int errcode = 0;
+    errcode = base64_decode(ifd, ofd);
+    if  (errcode) {
+        fprintf(stderr, errmsg[errcode]);
+    }
 
-    return 0;
+    return errcode;
 }

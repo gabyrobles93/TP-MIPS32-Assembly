@@ -8,7 +8,9 @@
 #define MASK_LAST_FOUR 0x0F
 #define MASK_LAST_SIX 0x3F
 
-static void base64_encode(unsigned int, unsigned int);
+extern const char* errmsg[];
+
+static int base64_encode(unsigned int, unsigned int);
 
 int B64_encoder_create(B64_encoder_t * enc, FILE * input, FILE * output) {
   enc->n_written = 0;
@@ -35,7 +37,13 @@ int B64_encoder_start(B64_encoder_t * enc) {
   int ofd = fileno(enc->_fout);
   //fprintf(stderr, "ofd en C: %i\n", ofd);
 
-  base64_encode(ifd, ofd);
-  return 0;
+  int errcode = 0;
+  errcode = base64_encode(ifd, ofd);
+
+  if (errcode) {
+    fprintf(stderr, errmsg[errcode]);
+  }
+
+  return errcode;
 
 }
