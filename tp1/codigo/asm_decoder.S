@@ -2,6 +2,22 @@
 #include <sys/syscall.h>
 
 #define BUFFER_SIZE 4
+#define PADDING_ASCII 61
+#define UPPER_A_ASCII 65
+#define UPPER_Z_ASCII 90
+#define LOWER_A_ASCII 97
+#define LOWER_Z_ASCII 122
+#define ZERO_ASCII 48
+#define NINE_ASCII 57
+#define PLUS_ASCII 43
+#define SLASH_ASCII 47
+#define SLASH_DECODED_VALUE 63
+#define PLUS_DECODED_VALUE 62
+#define DECODE_CONST_1 26
+#define DECODE_CONST_2 52
+#define INVALID_CHAR 0xFF
+#define ERROR_CODE 0xFF
+
 
 	.text			# segmento de texto del programa
 
@@ -68,11 +84,29 @@ decode_loop:
     beqz    v0, end_decode
 
     # Imprimo por pantalla los 4 bytes leidos (DEBUG)
-    li  v0, SYS_write           # Cargo la syscall
-    li  a0, 1                   # Cargo el ofd
-    la  a1, buffer              # Cargo el buffer
-    li  a2, BUFFER_SIZE         # Cargo el largo del buffer
-    syscall  
+    # li  v0, SYS_write           # Cargo la syscall
+    # li  a0, 1                   # Cargo el ofd
+    # la  a1, buffer              # Cargo el buffer
+    # li  a2, BUFFER_SIZE         # Cargo el largo del buffer
+    # syscall  
+
+    # Si llegamos acá es porque tenemos 4 bytes en el buffer 
+    # que pueden ser decodificados
+
+    # Invoco a la funcion que decodifica 4 bytes en el buffer
+    # Antes guardo registros caller-saved
+    sw  t0, 16($fp)
+    sw  t1, 12($fp)
+    # Paso el parametro de ofd
+    lw  a0, 20($fp)
+    jal	decode_4bytes
+    # Restauro los registros caller-saved
+    lw  t0, 16($fp)
+    lw  t1, 12($fp)
+    lw  a0, 24($fp)
+    lw  a1, 20($fp)
+
+
 
     j decode_loop
 
@@ -125,7 +159,7 @@ read_bytes_loop:
     sw  a0, 8($fp)
 
     li      v0, SYS_read        # Cargo la syscall
-#    lw      a0, 32($fp)         # Cargo el ifd
+    lw      a0, 32($fp)         # Cargo el ifd
     move    a1, t0              # Cargo la dirección del buffer
     li      a2, 1               # Cargo el largo del buffer
     syscall                     # Devuelve en v0 la cantidad leida
@@ -211,13 +245,244 @@ decode_4bytes:
     sw  ra, 48(sp)
     sw  $fp, 44(sp)
 
-    # Igualo fp con sp y de ahora en mas utilizo sp
+    # Igualo fp con sp y de ahora en mas utilizo fp
     move    $fp, sp
 
+    # FIN DE INICIALIZACIÓN DEL STACK FRAME | COMIENZO DE LA RUTINA
 
+    la  t0, buffer
+    li  t9, PADDING_ASCII
+    lbu  t1, 0(t0)  # Cargo buffer[0]
+    lbu  t2, 1(t0)  # Cargo buffer[1]
+    lbu  t3, 2(t0)  # Cargo buffer[2]
+    lbu  t4, 3(t0)  # Cargo buffer[3]
+
+    li  t5, 0       # b0 = 0
+    li  t6, 0       # b1 = 0
+    li  t7, 0       # b2 = 0
+    li  t8, 0       # b3 = 0
+
+    beq t1, t9, buffer_1
+    # Si t1 no es igual a '=' entonces hay que decodificarlo
+    # Para ello llamamos a decode_value
+    # Guardamos los registros caller-saved
+    sw  t0, 36($fp)
+    sw  t1, 32($fp)
+    sw  t2, 28($fp)
+    sw  t3, 24($fp)
+    sw  a0, 8($fp)
+    # Le pasamos su argumento (el byte a decodificar)
+    move a0, t1
+    sw  a0, 0($fp)
+    #
+    jal decode_value
+    # Recuperamos el byte decodificado
+    move t5, v0
+    # Recuperamos registros caller saved
+    lw  t0, 36($fp)
+    lw  t1, 32($fp)
+    lw  t2, 28($fp)
+    lw  t3, 24($fp)
+    lw  a0, 8($fp)
+
+buffer_1:
+    beq t2, t9, buffer_2
+
+    # Si t2 no es igual a '=' entonces hay que decodificarlo
+    # Para ello llamamos a decode_value
+    # Guardamos los registros caller-saved
+    sw  t0, 36($fp)
+    sw  t1, 32($fp)
+    sw  t2, 28($fp)
+    sw  t3, 24($fp)
+    sw  a0, 8($fp)
+    # Le pasamos su argumento (el byte a decodificar)
+    move a0, t2
+    sw  a0, 0($fp)
+    #
+    jal decode_value
+    # Recuperamos el byte decodificado
+    move t6, v0
+    # Recuperamos registros caller saved
+    lw  t0, 36($fp)
+    lw  t1, 32($fp)
+    lw  t2, 28($fp)
+    lw  t3, 24($fp)
+    lw  a0, 8($fp)
+
+buffer_2:
+    beq t3, t9, buffer_3
+
+    # Si t2 no es igual a '=' entonces hay que decodificarlo
+    # Para ello llamamos a decode_value
+    # Guardamos los registros caller-saved
+    sw  t0, 36($fp)
+    sw  t1, 32($fp)
+    sw  t2, 28($fp)
+    sw  t3, 24($fp)
+    sw  a0, 8($fp)
+    # Le pasamos su argumento (el byte a decodificar)
+    move a0, t3
+    sw  a0, 0($fp)
+    #
+    jal decode_value
+    # Recuperamos el byte decodificado
+    move t7, v0
+    # Recuperamos registros caller saved
+    lw  t0, 36($fp)
+    lw  t1, 32($fp)
+    lw  t2, 28($fp)
+    lw  t3, 24($fp)
+    lw  a0, 8($fp)
+
+buffer_3:
+    beq t4, t9, end_buffer
+
+    # Si t2 no es igual a '=' entonces hay que decodificarlo
+    # Para ello llamamos a decode_value
+    # Guardamos los registros caller-saved
+    sw  t0, 36($fp)
+    sw  t1, 32($fp)
+    sw  t2, 28($fp)
+    sw  t3, 24($fp)
+    sw  a0, 8($fp)
+    # Le pasamos su argumento (el byte a decodificar)
+    move a0, t4
+    sw  a0, 0($fp)
+    #
+    jal decode_value
+    # Recuperamos el byte decodificado
+    move t8, v0
+    # Recuperamos registros caller saved
+    lw  t0, 36($fp)
+    lw  t1, 32($fp)
+    lw  t2, 28($fp)
+    lw  t3, 24($fp)
+    lw  a0, 8($fp)
+
+end_buffer:
+
+    li  t0, INVALID_CHAR
+    beq t5, t0, error_invalid_char
+    beq t6, t0, error_invalid_char
+    beq t7, t0, error_invalid_char
+    beq t8, t0, error_invalid_char
+
+    move    s0, t5
+    sll s0, s0, 2
     
+    move    s1, t6
+    srl s1, s1, 4
+    
+    or  s2,  s0, s1
+
+    move    s0, t6
+    sll s0, s0, 4
+    
+    move    s1, t7
+    srl s1, s1, 2
+
+    or  s3,  s0, s1
+
+    move    s0, t7
+    sll s0, s0, 6
+    
+    move    s1, t8
+
+    or  s4,  s0, s1
 
 
+     # Imprimo por pantalla (DEBUG)
+     # li  v0, SYS_write           # Cargo la syscall
+     # li  a0, 1                   # Cargo el ofd
+     # la  a1, debug_msg           # Cargo el buffer
+     # li  a2, 15                  # Cargo el largo del buffer
+     # syscall  
+
+
+    li  t0, PADDING_ASCII
+    bne t4, t0, write_no_padding
+
+    bne t3, PADDING_ASCII, write_one_padding
+    # Si llegamos aca termina con dos =
+
+    sw  s2, 12($fp)
+    # Imprimo por pantalla el caracter decodificado
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, 12($fp)             # Cargo el buffer
+    li  a2, 1                   # Cargo el largo del buffer
+    syscall  
+
+    li  v0, 0
+
+    j end_decode_4bytes
+
+write_one_padding:
+    # Si llegamos aca termina con un =
+
+    sw  s2, 12($fp)
+    # Imprimo por pantalla el caracter decodificado
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, 12($fp)             # Cargo el buffer
+    li  a2, 1                   # Cargo el largo del buffer
+    syscall  
+
+    sw  s3, 12($fp)
+    # Imprimo por pantalla el caracter decodificado
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, 12($fp)             # Cargo el buffer
+    li  a2, 1                   # Cargo el largo del buffer
+    syscall  
+
+    j end_decode_4bytes
+
+write_no_padding:
+    # Si llegamos aca termina sin =
+
+    sw  s2, 12($fp)
+    # Imprimo por pantalla el caracter decodificado
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, 12($fp)             # Cargo el buffer
+    li  a2, 1                   # Cargo el largo del buffer
+    syscall  
+
+    sw  s3, 12($fp)
+    # Imprimo por pantalla el caracter decodificado
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, 12($fp)             # Cargo el buffer
+    li  a2, 1                   # Cargo el largo del buffer
+    syscall  
+
+    sw  s4, 12($fp)
+    # Imprimo por pantalla el caracter decodificado
+    li  v0, SYS_write           # Cargo la syscall
+    lw  a0, 8($fp)              # Cargo el ofd
+    la  a1, 12($fp)             # Cargo el buffer
+    li  a2, 1                   # Cargo el largo del buffer
+    syscall 
+
+    j end_decode_4bytes
+
+error_invalid_char:
+
+     # Imprimo por pantalla (ERROR)
+     li  v0, SYS_write           # Cargo la syscall
+     li  a0, 1                   # Cargo el ofd
+     la  a1, msg_error_invalid_char  # Cargo el buffer
+     li  a2, 15                  # Cargo el largo del buffer
+     syscall  
+
+    li v0, ERROR_CODE
+    j end_decode_4bytes
+
+end_decode_4bytes:
+
+    # FIN DE LA RUTINA | DESTRUCCIÓN DEL STACK FRAME
 
     # Restauro registros callee saved
     lw  ra, 48(sp)
@@ -254,9 +519,80 @@ decode_value:
     move    $fp, sp
 
 
+# FIN DE INICIALIZACIÓN DEL STACK FRAME | COMIENZO DE LA RUTINA
+
+    li  t0, SLASH_ASCII
+    beq a0, t0, decode_slash
     
+    li  t0, PLUS_ASCII
+    beq a0, t0, decode_plus
 
+    li  t0, PADDING_ASCII
+    beq a0, t0, decode_padding
 
+    li t1, ZERO_ASCII  
+    bltu a0, t1, invalid_byte # Si el byte a decodificar es < a '0' error.
+
+    li t1, NINE_ASCII
+    bleu a0, t1, deode_zero_nine # Si el byte a decodificar es >= 0 y <= 9
+
+    li t1, UPPER_A_ASCII
+    bltu a0, t1, invalid_byte # Si el byte a decodificar es < a 'A' error
+    
+    li t1, UPPER_Z_ASCII
+    bleu a0, t1, decode_upper_a_z # Si el byte a decodificar es >= A y <= Z
+    
+    li t1, LOWER_A_ASCII
+    bltu a0, t1, invalid_byte # Si el byte a decodificar es < a 'a' error
+
+    li t1, LOWER_Z_ASCII
+    bleu a0, t1, decode_lower_a_z # Si el byte a decodificar es >= a y <= z
+
+    bgtu a0, t1, invalid_byte # Si el byte a decodificar es > z
+
+decode_padding:
+    li  v0, 0
+    j end_decode_value
+
+invalid_byte:
+    li  v0, INVALID_CHAR
+    j end_decode_value
+
+decode_lower_a_z:
+    li  t0, LOWER_A_ASCII
+    subu a0, a0, t0         # byte = byte - 'a'
+    li t0, DECODE_CONST_1
+    addu a0, a0, t0         # byte = byte + 26
+    move    v0, a0
+
+    j end_decode_value
+
+decode_upper_a_z:
+    li  t0, UPPER_A_ASCII
+    subu a0, a0, t0         # byte = byte - 'A'
+    move    v0, a0
+    j end_decode_value
+
+deode_zero_nine:
+    li  t0, ZERO_ASCII
+    subu a0, a0, t0         # byte = byte - '0'
+    li t0, DECODE_CONST_2
+    addu a0, a0, t0         # byte = byte + 52
+    move    v0, a0
+    j end_decode_value
+
+decode_plus:
+
+    li  v0, PLUS_DECODED_VALUE
+    j end_decode_value
+
+decode_slash:
+
+    li v0, SLASH_DECODED_VALUE
+    j end_decode_value
+
+end_decode_value:
+# FIN DE LA RUTINA | DESTRUCCIÓN DEL STACK FRAME
 
     # Restauro registros callee saved
     lw  ra, 16(sp)
@@ -277,7 +613,8 @@ decode_value:
    .data
 
 buffer: .space BUFFER_SIZE
-debug_msg: .asciiz "Mensaje\n"
+debug_msg: .asciiz "Por escribir: \n"
+msg_error_invalid_char: .asciiz "Char invalido.\n"
 
 	.rdata			# segmento read-only data
 	.align 2
