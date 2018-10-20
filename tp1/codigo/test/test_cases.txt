@@ -1,0 +1,5 @@
+echo Man | tp1 | tp1 -a decode
+
+echo xyz | tp1 | tp1 -a decode | od -t c
+
+yes | head -c 1024 | tp1 -a encode | tp1 -a decode | wc -c
